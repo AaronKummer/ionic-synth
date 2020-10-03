@@ -60,7 +60,9 @@ moved(ev) {
  
   let currentX = ev.pageX - canvasPosition.x;
   let currentY = ev.pageY - canvasPosition.y;
- 
+  console.log(currentY)
+
+  this.synth.setNote(400-currentY)
   ctx.lineJoin = 'round';
   ctx.strokeStyle = '9e2956';
   ctx.lineWidth = 5;
