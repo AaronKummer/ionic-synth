@@ -12,15 +12,24 @@ export class HomePage implements AfterViewInit {
   saveX: number;
   saveY: number;
   drawing = false;
-  synth = new Tone.Synth().toDestination();
+  synth = new Tone.MonoSynth({
+	oscillator: {
+		type: "sawtooth"
+	},
+	envelope: {
+    sustain: 1,
+  },
+  
+}).toDestination();
   constructor(private plt: Platform, private toastCtrl: ToastController) {}
   ngAfterViewInit(): void {
     this.canvasElement = this.canvas.nativeElement;
     this.canvasElement.width = this.plt.width() + '';
-    this.canvasElement.height = 200;
+    this.canvasElement.height = 400;
   }
  startDrawing(ev) {
-    
+   
+    this.synth.triggerAttack('C4')
     this.drawing = true;
     var canvasPosition = this.canvasElement.getBoundingClientRect();
  
@@ -30,7 +39,7 @@ export class HomePage implements AfterViewInit {
  
   endDrawing() {
     this.drawing = false;
-    this.synth.triggerAttackRelease("C3", "8n");
+    this.synth.triggerRelease();
   }
  
   setBackground() {
