@@ -26,6 +26,12 @@ export class HomePage implements AfterViewInit {
     this.canvasElement = this.canvas.nativeElement;
     this.canvasElement.width = this.plt.width() + '';
     this.canvasElement.height = 400;
+    setInterval((ctx) => {
+    var r = 0.3 + (Math.random()*0.1);
+    var ctx = this.canvasElement.getContext('2d') 
+    ctx.fillStyle = "rgba(60,30,50,"+r+")";
+    ctx.fillRect(0,0,this.canvasElement.width, this.canvasElement.height)
+    }, 100)
   }
  startDrawing(ev) {
    
@@ -41,16 +47,6 @@ export class HomePage implements AfterViewInit {
     this.drawing = false;
     this.synth.triggerRelease();
   }
- 
-  setBackground() {
-    var background = new Image();
-    background.src = './assets/code.png';
-    let ctx = this.canvasElement.getContext('2d');
- 
-    background.onload = () => {
-      ctx.drawImage(background,0,0, this.canvasElement.width, this.canvasElement.height);   
-    }
-  }
 
 moved(ev) {
   if (!this.drawing) return;
@@ -64,7 +60,7 @@ moved(ev) {
 
   this.synth.setNote(400-currentY)
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '9e2956';
+  ctx.strokeStyle = '#de34eb';
   ctx.lineWidth = 5;
  
   ctx.beginPath();
@@ -75,6 +71,9 @@ moved(ev) {
   ctx.stroke();
   this.saveX = currentX;
   this.saveY = currentY;
+  
+
+
 }
 
 }
