@@ -12,15 +12,18 @@ export class HomePage implements AfterViewInit {
   saveX: number;
   saveY: number;
   drawing = false;
+  filter = new Tone.Filter({
+    frequency: .01,
+    type: "lowpass",
+    rolloff:-24
+  }).toDestination()
   synth = new Tone.MonoSynth({
 	oscillator: {
 		type: "sawtooth"
 	},
-	envelope: {
-    sustain: 1,
-  },
-  
-}).toDestination();
+}).chain(this.filter).toDestination()
+
+
   constructor(private plt: Platform, private toastCtrl: ToastController) {}
   ngAfterViewInit(): void {
     this.canvasElement = this.canvas.nativeElement;
@@ -50,15 +53,20 @@ export class HomePage implements AfterViewInit {
 
 moved(ev) {
   if (!this.drawing) return;
- 
+
   var canvasPosition = this.canvasElement.getBoundingClientRect();
   let ctx = this.canvasElement.getContext('2d');
  
   let currentX = ev.pageX - canvasPosition.x;
   let currentY = ev.pageY - canvasPosition.y;
-  console.log(currentY)
-
+  
+  this.filter.set({
+    frequency: currentX-200,
+  })
   this.synth.setNote(400-currentY)
+  
+
+
   ctx.lineJoin = 'round';
   ctx.strokeStyle = '#de34eb';
   ctx.lineWidth = 5;
@@ -71,9 +79,6 @@ moved(ev) {
   ctx.stroke();
   this.saveX = currentX;
   this.saveY = currentY;
-  
-
-
 }
 
 }
