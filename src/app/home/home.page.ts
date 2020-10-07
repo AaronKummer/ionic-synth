@@ -68,8 +68,37 @@ moved(ev) {
     frequency: filter,
   })
   this.synth.setNote(currentX)
-  
 
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#61cffa';
+  ctx.lineWidth = 22;
+ 
+  ctx.beginPath();
+  ctx.moveTo(this.saveX, this.saveY);
+  ctx.lineTo(currentX, currentY);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#6d45cc';
+  ctx.lineWidth = 18;
+ 
+  ctx.beginPath();
+  ctx.moveTo(this.saveX, this.saveY);
+  ctx.lineTo(currentX, currentY);
+  ctx.closePath();
+  ctx.stroke();
+
+
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#5432a8';
+  ctx.lineWidth = 12;
+ 
+  ctx.beginPath();
+  ctx.moveTo(this.saveX, this.saveY);
+  ctx.lineTo(currentX, currentY);
+  ctx.closePath();
+  ctx.stroke();
 
   ctx.lineJoin = 'round';
   ctx.strokeStyle = '#de34eb';
@@ -79,8 +108,18 @@ moved(ev) {
   ctx.moveTo(this.saveX, this.saveY);
   ctx.lineTo(currentX, currentY);
   ctx.closePath();
- 
   ctx.stroke();
+
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#ed00ff';
+  ctx.lineWidth = 2;
+ 
+  ctx.beginPath();
+  ctx.moveTo(this.saveX, this.saveY);
+  ctx.lineTo(currentX, currentY);
+  ctx.closePath();
+  ctx.stroke();
+
   this.saveX = currentX;
   this.saveY = currentY;
 }
