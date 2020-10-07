@@ -13,9 +13,10 @@ export class HomePage implements AfterViewInit {
   saveY: number;
   drawing = false;
   filter = new Tone.Filter({
-    frequency: .01,
+    // frequency: .01,
     type: "lowpass",
-    rolloff:-24
+    rolloff: -12,
+
   }).toDestination()
   synth = new Tone.MonoSynth({
 	oscillator: {
@@ -27,8 +28,8 @@ export class HomePage implements AfterViewInit {
   constructor(private plt: Platform, private toastCtrl: ToastController) {}
   ngAfterViewInit(): void {
     this.canvasElement = this.canvas.nativeElement;
-    this.canvasElement.width = this.plt.width() + '';
-    this.canvasElement.height = 400;
+    this.canvasElement.width = 600;
+    this.canvasElement.height = 600;
     setInterval((ctx) => {
     var r = 0.3 + (Math.random()*0.1);
     var ctx = this.canvasElement.getContext('2d') 
@@ -61,7 +62,7 @@ moved(ev) {
   let currentY = ev.pageY - canvasPosition.y;
   
   this.filter.set({
-    frequency: currentX-200,
+    frequency: currentX*4,
   })
   this.synth.setNote(400-currentY)
   
