@@ -60,11 +60,14 @@ moved(ev) {
  
   let currentX = ev.pageX - canvasPosition.x;
   let currentY = ev.pageY - canvasPosition.y;
+  let filter = (600-currentY)*2
   
+  console.log('current y position is ' + currentY)
+  console.log(filter)
   this.filter.set({
-    frequency: currentX*4,
+    frequency: filter,
   })
-  this.synth.setNote(400-currentY)
+  this.synth.setNote(currentX)
   
 
 
