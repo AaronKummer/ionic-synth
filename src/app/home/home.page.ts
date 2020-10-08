@@ -1,3 +1,4 @@
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { AfterViewInit, ViewChild, Component } from '@angular/core';
 import { Platform, ToastController } from '@ionic/angular';
 import * as Tone from 'tone'
@@ -43,16 +44,24 @@ export class HomePage implements AfterViewInit {
     this.canvasElement.width = 600;
     this.canvasElement.height = 600;
     this.ctx = this.canvasElement.getContext('2d') 
-    this.ctx.fillStyle = "rgb(0,0,0)";
-    this.ctx.fillRect(0,0,this.canvasElement.width, this.canvasElement.height)
-    setInterval((ctx) => {
-    if (this.drawing) {
-      this.generateParticles()
-    }
-    this.moveParticles()
-    }, 50)
     
   }
+
+mainLoop() {
+    console.log('looping')
+    if (this.drawing) {
+      this.particles.push(new Particle(this.saveX,this.saveY))
+    }
+    
+    this.particles.forEach(p => {
+      this.drawParticle(p)
+      
+      this.updateParticle(p)
+      if (p.alpha <= 0) {
+        this.particles.splice(this.particles.indexOf(p), 1)
+      }
+    })
+};
 
  startDrawing(ev) {
    console.log('starting to draw')
@@ -63,100 +72,27 @@ export class HomePage implements AfterViewInit {
     this.saveX = ev.pageX - canvasPosition.x;
     this.saveY = ev.pageY - canvasPosition.y;
     setInterval(() => {
-      this.drawingTime += .0001
-      if (this.red < 254 && this.blue < 254) {
-        this.red += .5
-        this.blue += .2
-      } 
-      this.lineSize += .2
       // this.reverb.set({
       //   wet: this.drawingTime
       // })
-    
-  },30)
+      this.ctx.fillStyle = 'black'
+      this.ctx.fillRect(0,0,600,600)
+    this.mainLoop()
+  },1000/60)
+   
   }
- 
+
   endDrawing() {
     this.drawing = false;
     this.synth.triggerRelease();
     this.reverb.set({
       wet:0
     })
-    this.blue = 100
-    this.red = 50
+    this.particles.forEach(p => {
+      this.particles.pop()
+    })
     
   }
-
-moveParticle(p) {
-    this.ctx.fillStyle = 'black'
-    this.ctx.fillRect(p.x,p.y, p.width, p.height)      
-
-    if (p.age < 100) {
-      let flip = Math.random()
-       if  (p.age < 15) {
-        if (flip > .5) {
-          this.ctx.fillRect(p.x+2,p.y-2, p.width, p.height)  
-          p.x += 2
-          p.y += 2
-        } else {
-          this.ctx.fillRect(p.x-2,p.y-2, p.width, p.height)  
-          p.x -= 2
-          p.y += 2
-        }
-       } else {
-         if (flip > .5) {
-          this.ctx.fillRect(p.x+2,p.y+2, p.width, p.height)  
-             
-          p.x += 2
-          p.y -= 2
-         } else {
-          this.ctx.fillRect(p.x-2,p.y+2, p.width, p.height)  
-          p.x -= 2
-          p.y -= 2
-         }
-       }
-    }
-    if (p.age >= 100) {
-      this.ctx.fillStyle = 'black'
-      this.ctx.fillRect(p.x,p.y, p.width, p.height)      
-      this.particles.splice(this.particles.indexOf(p), 1);
-    }
-
-}
-
-moveParticles() {
-    this.particles.forEach(p => {
-    this.moveParticle(p)
-    console.log(this.particles)
-    p.age += 1
-  })
-}
-
-generateParticles() {
-  if (this.drawing) {
-    for (let i = 0; i < 5; i++) {
-      this.particles.push({
-        x : this.saveX,
-        y : this.saveY,
-        color : 'yellow',
-        age : 1,
-        height : 5,
-        width : 5
-      })
-    }
-      this.particles.forEach(p => {
-        this.ctx.fillStyle = p.color
-        this.ctx.fillRect(p.x,p.y, p.width, p.height)      
-      })
-  }
-}
-
-
-particleExplosion(x,y) {
-  
-  console.log(x,y)
-  
-}
 
 moved(ev) {
   if (!this.drawing) return;
@@ -164,39 +100,58 @@ moved(ev) {
   var canvasPosition = this.canvasElement.getBoundingClientRect()
   let currentX = ev.pageX - canvasPosition.x
   let currentY = ev.pageY - canvasPosition.y
-
+  this.red = currentX / 2.3
+  this.blue = currentY / 2.3
+  this.green = (600-currentY) / 2.3
   let filter = (600-currentY)*2
   this.filter.set({
     frequency: filter,
   })
 
   this.synth.setNote(currentX)
-
-  // color stuff
-  
-  // this.ctx.lineJoin = 'round';
-  // this.ctx.strokeStyle = 'rgba(' + this.red + ',' + this.green + ',' + this.blue + ')'
-  // this.ctx.lineWidth = this.lineSize
-  // this.ctx.beginPath();
-  // this.ctx.moveTo(this.saveX, this.saveY)
-  // this.ctx.bezierCurveTo(this.saveX, this.saveY,currentX, currentY, currentX, currentY)
-  // this.ctx.closePath();
-  // this.ctx.stroke();
-  
   
   this.saveX = currentX
   this.saveY = currentY
+}
+
+drawParticle (particle) {
+  
+  this.ctx.beginPath()
+  this.ctx.arc(particle.x, particle.y, 12, 0, 2 * Math.PI);
+  this.ctx.fillStyle = 'rgba('+ this.red + ',' + this.green + ',' + this.blue +','+ particle.alpha +')'
+  this.ctx.fill()
+  this.ctx.closePath()
+  
+}
+
+updateParticle(particle) {
+  // particle.vx += this.saveX /1000
+  if (this.saveX < 200) {
+    particle.vy  -= (this.saveX / 500) / 5
+  } else {
+    particle.vy  -= (this.saveX / 50) / 5
+  }
+  
+  particle.x += particle.vx
+  particle.y += particle.vy
+  particle.alpha -= .01
 }
 
 }
 
 export class Particle {
   x : number = 0
-  y  : number = 0
-  height : number = 5
-  width :  number = 5
-  age : number = 0
-  // goingUp : boolean = true
+  y : number = 0
+  vx :  number = 0
+  vy : number = 0
   color : string = 'yellow'
+  alpha : number
+  constructor(x,y) {
+    this.x = x;
+    this.y = y
+    this.vx = Math.random() * 10
+    this.vy = Math.random() * -5
+    this.alpha = 1
+  }
 }
 
