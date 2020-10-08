@@ -8,6 +8,17 @@ import * as Tone from 'tone'
 })
 export class HomePage implements AfterViewInit {
 @ViewChild('imageCanvas', { static: false }) canvas: any;
+  drawingTime = 0
+  red = 50
+  blue = 100
+  green = 0
+  lineSize = 10
+  particle = {
+    x : 0,
+    y : 0
+  }
+  particles = []
+  ctx: any;
   canvasElement: any;
   saveX: number;
   saveY: number;
@@ -15,22 +26,20 @@ export class HomePage implements AfterViewInit {
   reverb = new Tone.JCReverb({
     wet: 0,
     roomSize: 1,
-    
   }).toDestination()
   filter = new Tone.Filter({
     // frequency: .01,
     type: "lowpass",
     rolloff: -12,
-
   }).toDestination()
   synth = new Tone.MonoSynth({
 	oscillator: {
 		type: "sawtooth"
 	},
 }).chain(this.filter, this.reverb).toDestination()
-  ctx: any;
 
   constructor(private plt: Platform, private toastCtrl: ToastController) {}
+
   ngAfterViewInit(): void {
     this.canvasElement = this.canvas.nativeElement;
     this.canvasElement.width = 600;
@@ -40,17 +49,30 @@ export class HomePage implements AfterViewInit {
     this.ctx = this.canvasElement.getContext('2d') 
     this.ctx.fillStyle = "rgba(0,0,0,"+r+")";
     this.ctx.fillRect(0,0,this.canvasElement.width, this.canvasElement.height)
-    }, 100)
+    }, 10)
     
   }
+
+ 
+
  startDrawing(ev) {
-   
+    this.lineSize = 12
     this.synth.triggerAttack('C4')
     this.drawing = true;
     var canvasPosition = this.canvasElement.getBoundingClientRect();
- 
     this.saveX = ev.pageX - canvasPosition.x;
     this.saveY = ev.pageY - canvasPosition.y;
+    setInterval(() => {
+      this.drawingTime += .0001
+      if (this.red < 254 && this.blue < 254) {
+        this.red += .5
+        this.blue += .2
+      } 
+      this.lineSize += .2
+      // this.reverb.set({
+      //   wet: this.drawingTime
+      // })
+    },30)
   }
  
   endDrawing() {
@@ -59,46 +81,49 @@ export class HomePage implements AfterViewInit {
     this.reverb.set({
       wet:0
     })
+    this.blue = 100
+    this.red = 50
+    
   }
+
+particleExplosion(x,y) {
+
+  this.ctx.fillStyle('green')
+  this.ctx.fillRect(x+30, y+30, 2, 2)
+  for (let i = 0; i < 50; i++) {
+        
+    
+  }
+}
 
 moved(ev) {
   if (!this.drawing) return;
-
-  var canvasPosition = this.canvasElement.getBoundingClientRect();
-  let currentX = ev.pageX - canvasPosition.x;
-  let currentY = ev.pageY - canvasPosition.y;
+  
+  var canvasPosition = this.canvasElement.getBoundingClientRect()
+  let currentX = ev.pageX - canvasPosition.x
+  let currentY = ev.pageY - canvasPosition.y
 
   let filter = (600-currentY)*2
   this.filter.set({
     frequency: filter,
   })
 
-  this.reverb.set({
-    wet: currentX/6000
-  })
-
   this.synth.setNote(currentX)
 
   // color stuff
-  let red = 220
-  let green = 0
-  let blue = 255
-  for (let i = 10; i > 1; i--) {
-  // red = red + (i/2)
-  // green = green+(i*3)
+  
   this.ctx.lineJoin = 'round';
-  this.ctx.strokeStyle = 'rgba(' + red + ',' + green + ',' + blue + ')'
-  this.ctx.lineWidth = i*2.5;
+  this.ctx.strokeStyle = 'rgba(' + this.red + ',' + this.green + ',' + this.blue + ')'
+  this.ctx.lineWidth = this.lineSize
   this.ctx.beginPath();
-  this.ctx.moveTo(this.saveX, this.saveY);
-  this.ctx.lineTo(currentX, currentY);
+  this.ctx.moveTo(this.saveX, this.saveY)
+  this.ctx.bezierCurveTo(this.saveX, this.saveY,currentX, currentY, currentX, currentY)
   this.ctx.closePath();
   this.ctx.stroke();
-  // window.requestAnimationFrame(this.moved)
-  }
   
-  this.saveX = currentX;
-  this.saveY = currentY;
+  this.particleExplosion(this.saveX, this.saveY)
+  this.saveX = currentX
+  this.saveY = currentY
 }
 
 }
