@@ -1,6 +1,7 @@
 import { AfterViewInit, ViewChild, Component } from '@angular/core';
 import { Platform, ToastController } from '@ionic/angular';
 import * as Tone from 'tone'
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -13,11 +14,8 @@ export class HomePage implements AfterViewInit {
   blue = 100
   green = 0
   lineSize = 10
-  particle = {
-    x : 0,
-    y : 0
-  }
-  particles = []
+  
+  particles : Particle[] = []
   ctx: any;
   canvasElement: any;
   saveX: number;
@@ -38,25 +36,27 @@ export class HomePage implements AfterViewInit {
 	},
 }).chain(this.filter, this.reverb).toDestination()
 
-  constructor(private plt: Platform, private toastCtrl: ToastController) {}
+  constructor() {}
 
   ngAfterViewInit(): void {
     this.canvasElement = this.canvas.nativeElement;
     this.canvasElement.width = 600;
     this.canvasElement.height = 600;
-    setInterval((ctx) => {
-    var r = 0.3 + (Math.random()*0.1);
     this.ctx = this.canvasElement.getContext('2d') 
-    this.ctx.fillStyle = "rgba(0,0,0,"+r+")";
+    this.ctx.fillStyle = "rgb(0,0,0)";
     this.ctx.fillRect(0,0,this.canvasElement.width, this.canvasElement.height)
-    }, 10)
+    setInterval((ctx) => {
+    if (this.drawing) {
+      this.generateParticles()
+    }
+    this.moveParticles()
+    }, 50)
     
   }
 
- 
-
  startDrawing(ev) {
-    this.lineSize = 12
+   console.log('starting to draw')
+    // this.lineSize = 12
     this.synth.triggerAttack('C4')
     this.drawing = true;
     var canvasPosition = this.canvasElement.getBoundingClientRect();
@@ -72,7 +72,8 @@ export class HomePage implements AfterViewInit {
       // this.reverb.set({
       //   wet: this.drawingTime
       // })
-    },30)
+    
+  },30)
   }
  
   endDrawing() {
@@ -86,14 +87,75 @@ export class HomePage implements AfterViewInit {
     
   }
 
-particleExplosion(x,y) {
+moveParticle(p) {
+    this.ctx.fillStyle = 'black'
+    this.ctx.fillRect(p.x,p.y, p.width, p.height)      
 
-  this.ctx.fillStyle('green')
-  this.ctx.fillRect(x+30, y+30, 2, 2)
-  for (let i = 0; i < 50; i++) {
-        
-    
+    if (p.age < 100) {
+      let flip = Math.random()
+       if  (p.age < 15) {
+        if (flip > .5) {
+          this.ctx.fillRect(p.x+2,p.y-2, p.width, p.height)  
+          p.x += 2
+          p.y += 2
+        } else {
+          this.ctx.fillRect(p.x-2,p.y-2, p.width, p.height)  
+          p.x -= 2
+          p.y += 2
+        }
+       } else {
+         if (flip > .5) {
+          this.ctx.fillRect(p.x+2,p.y+2, p.width, p.height)  
+             
+          p.x += 2
+          p.y -= 2
+         } else {
+          this.ctx.fillRect(p.x-2,p.y+2, p.width, p.height)  
+          p.x -= 2
+          p.y -= 2
+         }
+       }
+    }
+    if (p.age >= 100) {
+      this.ctx.fillStyle = 'black'
+      this.ctx.fillRect(p.x,p.y, p.width, p.height)      
+      this.particles.splice(this.particles.indexOf(p), 1);
+    }
+
+}
+
+moveParticles() {
+    this.particles.forEach(p => {
+    this.moveParticle(p)
+    console.log(this.particles)
+    p.age += 1
+  })
+}
+
+generateParticles() {
+  if (this.drawing) {
+    for (let i = 0; i < 5; i++) {
+      this.particles.push({
+        x : this.saveX,
+        y : this.saveY,
+        color : 'yellow',
+        age : 1,
+        height : 5,
+        width : 5
+      })
+    }
+      this.particles.forEach(p => {
+        this.ctx.fillStyle = p.color
+        this.ctx.fillRect(p.x,p.y, p.width, p.height)      
+      })
   }
+}
+
+
+particleExplosion(x,y) {
+  
+  console.log(x,y)
+  
 }
 
 moved(ev) {
@@ -112,18 +174,29 @@ moved(ev) {
 
   // color stuff
   
-  this.ctx.lineJoin = 'round';
-  this.ctx.strokeStyle = 'rgba(' + this.red + ',' + this.green + ',' + this.blue + ')'
-  this.ctx.lineWidth = this.lineSize
-  this.ctx.beginPath();
-  this.ctx.moveTo(this.saveX, this.saveY)
-  this.ctx.bezierCurveTo(this.saveX, this.saveY,currentX, currentY, currentX, currentY)
-  this.ctx.closePath();
-  this.ctx.stroke();
+  // this.ctx.lineJoin = 'round';
+  // this.ctx.strokeStyle = 'rgba(' + this.red + ',' + this.green + ',' + this.blue + ')'
+  // this.ctx.lineWidth = this.lineSize
+  // this.ctx.beginPath();
+  // this.ctx.moveTo(this.saveX, this.saveY)
+  // this.ctx.bezierCurveTo(this.saveX, this.saveY,currentX, currentY, currentX, currentY)
+  // this.ctx.closePath();
+  // this.ctx.stroke();
   
-  this.particleExplosion(this.saveX, this.saveY)
+  
   this.saveX = currentX
   this.saveY = currentY
 }
 
 }
+
+export class Particle {
+  x : number = 0
+  y  : number = 0
+  height : number = 5
+  width :  number = 5
+  age : number = 0
+  // goingUp : boolean = true
+  color : string = 'yellow'
+}
+
