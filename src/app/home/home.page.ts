@@ -12,6 +12,11 @@ export class HomePage implements AfterViewInit {
   saveX: number;
   saveY: number;
   drawing = false;
+  reverb = new Tone.JCReverb({
+    wet: 0,
+    roomSize: 1,
+    
+  }).toDestination()
   filter = new Tone.Filter({
     // frequency: .01,
     type: "lowpass",
@@ -22,7 +27,7 @@ export class HomePage implements AfterViewInit {
 	oscillator: {
 		type: "sawtooth"
 	},
-}).chain(this.filter).toDestination()
+}).chain(this.filter, this.reverb).toDestination()
   ctx: any;
 
   constructor(private plt: Platform, private toastCtrl: ToastController) {}
@@ -51,25 +56,31 @@ export class HomePage implements AfterViewInit {
   endDrawing() {
     this.drawing = false;
     this.synth.triggerRelease();
+    this.reverb.set({
+      wet:0
+    })
   }
 
 moved(ev) {
   if (!this.drawing) return;
 
   var canvasPosition = this.canvasElement.getBoundingClientRect();
-  
-  
   let currentX = ev.pageX - canvasPosition.x;
   let currentY = ev.pageY - canvasPosition.y;
+
   let filter = (600-currentY)*2
-  
-  console.log('current y position is ' + currentY)
-  console.log(filter)
   this.filter.set({
     frequency: filter,
   })
+
+  this.reverb.set({
+    wet: currentX/6000
+  })
+
   this.synth.setNote(currentX)
-  let red = 251
+
+  // color stuff
+  let red = 220
   let green = 0
   let blue = 255
   for (let i = 10; i > 1; i--) {
@@ -83,10 +94,8 @@ moved(ev) {
   this.ctx.lineTo(currentX, currentY);
   this.ctx.closePath();
   this.ctx.stroke();
-    
+  // window.requestAnimationFrame(this.moved)
   }
-
-  
   
   this.saveX = currentX;
   this.saveY = currentY;
