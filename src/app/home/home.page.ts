@@ -38,7 +38,7 @@ export class HomePage implements AfterViewInit {
     setInterval((ctx) => {
     var r = 0.3 + (Math.random()*0.1);
     this.ctx = this.canvasElement.getContext('2d') 
-    this.ctx.fillStyle = "rgba(60,30,50,"+r+")";
+    this.ctx.fillStyle = "rgba(0,0,0,"+r+")";
     this.ctx.fillRect(0,0,this.canvasElement.width, this.canvasElement.height)
     }, 100)
     
@@ -84,8 +84,8 @@ moved(ev) {
   let green = 0
   let blue = 255
   for (let i = 10; i > 1; i--) {
-  red = red + (i/2)
-  green = green+(i*3)
+  // red = red + (i/2)
+  // green = green+(i*3)
   this.ctx.lineJoin = 'round';
   this.ctx.strokeStyle = 'rgba(' + red + ',' + green + ',' + blue + ')'
   this.ctx.lineWidth = i*2.5;
